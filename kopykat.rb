@@ -20,6 +20,9 @@ keys[';'] = 0xBA; keys['='] = 0xBB; keys[','] = 0xBC; keys['-'] = 0xBD; keys['.'
 keys['/'] = 0xBF; keys['`'] = 0xC0; keys['['] = 0xDB; keys[']'] = 0xDD; keys["'"] = 0xDE 
 keys['\\'] = 0xDC
 
+# add custom key macros
+keys['\n'] = 0x0D; keys['\t'] = 0x09; keys['(backspace)'] = 0x08; keys['(CAPSLOCK)'] = 0x14
+
 # add for uppercase letters
 ('a'..'z').each { |char| uppercase[char] = char.upcase }
 
